@@ -1,0 +1,100 @@
+[build-system]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llamaduck"
+version = "0.1.0"
+description = "A powerful macOS-optimized search and chat CLI tool using DuckDuckGo's API"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
+authors = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+maintainers = [
+    {name = "Your Name", email = "your.email@example.com"}
+]
+keywords = ["search", "cli", "terminal", "duckduckgo", "chat"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "click>=8.1.8",
+    "requests>=2.25.1",
+    "beautifulsoup4>=4.9.3",
+    "rich>=13.0.0",
+    "duckduckgo-search>=6.1.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "uv>=0.1.0",
+    "tox>=4.0.0",
+    "bandit>=1.7.5",
+    "safety>=2.3.5",
+]
+test = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "mypy>=1.0.0",
+    "ruff>=0.4.0",
+    "types-requests>=2.31.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/yourusername/llamaduck_pro"
+Documentation = "https://github.com/yourusername/llamaduck_pro#readme"
+Issues = "https://github.com/yourusername/llamaduck_pro/issues"
+Changelog = "https://github.com/yourusername/llamaduck_pro/releases"
+
+[project.scripts]
+llamaduck = "llamaduck.cli:cli"
+
+[tool.ruff]
+target-version = "py38"
+line-length = 100
+select = ["E", "F", "B", "I", "N", "UP", "ANN", "D", "S", "A", "C4", "RUF"]
+ignore = ["ANN101", "D203", "D213", "S101"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+python_files = "test_*.py"
+addopts = "--cov=llamaduck --cov-report=term-missing"
+
+[tool.mypy]
+python_version = "3.8"
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_return_any = true
+warn_unreachable = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+
+[tool.bandit]
+exclude_dirs = ["tests", ".venv", "build"]
+targets = ["llamaduck"]
+skips = ["B101"]  # Skip assertion warnings in tests 
