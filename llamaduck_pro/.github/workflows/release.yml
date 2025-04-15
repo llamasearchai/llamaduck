@@ -1,0 +1,74 @@
+name: Release
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release'
+        required: true
+        default: ''
+
+jobs:
+  release:
+    name: Release to PyPI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine
+      
+      - name: Set version from event
+        if: github.event_name == 'release'
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+      
+      - name: Set version from input
+        if: github.event_name == 'workflow_dispatch'
+        run: echo "RELEASE_VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+      
+      - name: Verify version formatting
+        run: |
+          if ! [[ ${{ env.RELEASE_VERSION }} =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Version must be in format X.Y.Z"
+            exit 1
+          fi
+      
+      - name: Update version in files
+        run: |
+          # Update version in pyproject.toml
+          sed -i "s/version = \"[0-9]*\.[0-9]*\.[0-9]*\"/version = \"${{ env.RELEASE_VERSION }}\"/" pyproject.toml
+          
+          # Update version in __init__.py
+          sed -i "s/__version__ = \"[0-9]*\.[0-9]*\.[0-9]*\"/__version__ = \"${{ env.RELEASE_VERSION }}\"/" llamaduck/__init__.py
+      
+      - name: Build package
+        run: python -m build
+      
+      - name: Check dist
+        run: twine check dist/*
+      
+      - name: Publish to PyPI
+        if: success()
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
+      
+      - name: Create GitHub Release
+        if: github.event_name == 'workflow_dispatch'
+        uses: ncipollo/release-action@v1.13.0
+        with:
+          tag: v${{ env.RELEASE_VERSION }}
+          name: Release v${{ env.RELEASE_VERSION }}
+          generateReleaseNotes: true 
